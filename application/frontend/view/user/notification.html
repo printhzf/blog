@@ -1,0 +1,67 @@
+{extend name='layout:layout' /}
+{block name='title'}
+	{__block__}
+{/block}
+{block name='css'}
+<style type="text/css">
+	.notification{
+		width : 800px;
+		height: auto;
+		min-height: 600px;
+		margin: 0 auto;
+	}
+	.notification-header{
+		padding: 10px;
+		text-align: center;
+		border-bottom: 1px solid #ccc;
+	}
+	.notification-body{
+		padding: 10px 10px 0 10px;
+		border-bottom: 1px solid #ccc;
+	}
+		.notification-content{
+			font-size: 16px;
+			margin-bottom: 10px;
+		}
+		.notification-content-r{
+			width: 100%;
+		}
+		.notification-content-r p{
+			height: 24px;
+			line-height: 24px;
+		}
+</style>
+{/block}
+{block name='container'}
+	<div class="notification box">
+		<div class="notification-header">
+			<i class='layui-icon layui-icon-notice' style="font-size: 30px; color: #1E9FFF;">我的通知</i>
+		</div>
+		{notempty name='list'}
+			<div class="notification-body">
+			{volist name='list' id='v'}
+				<div class="notification-content flex-start">
+					<div class="notification-content-l">
+						{eq name='v.head_img' value='0'}
+							<img src="/static/images/user/headimg.jpg" class="layui-nav-img"/>
+						{else/}
+							<img src="{$v.head_img}" class="layui-nav-img"/>
+						{/eq}
+					</div>
+					<div class="notification-content-r">
+						<span>
+							{$v.username} 评论了 <a href="{:url('index/index/veiwTopicDetail',['topic_id'=> $v.topic_id])}">{$v.topic_title}</a> 
+						</span>
+						<span style="float:right;">{$v.gmt_create}</span>
+						<p>{$v.reply_content}</p>
+					</div>
+				</div>
+			{/volist}
+			</div>
+		{/notempty}
+	</div>
+{/block}
+{block name='js'}
+{__block__}
+
+{/block}

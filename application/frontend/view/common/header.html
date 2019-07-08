@@ -1,0 +1,49 @@
+<div class="header">
+	<ul class="layui-nav">
+		<!-- 默认首页高亮显示-->
+		<li class='layui-nav-item {empty name="$Request.param.category_id"} layui-this {/empty}'>
+			<a href="{:url('index')}">首页</a>
+		</li>
+		<li class="layui-nav-item">
+			<a href="javascript:;">文章分类</a>
+			<dl class="layui-nav-child"> <!-- 二级菜单 -->
+				{volist name='cateList' id='v'}
+				<dd 
+				{//用请求对象从URL中获取当前的category_id参数}
+		        {eq name="$v.id" value="$Request.param.category_id"}  
+		         class="layui-this"
+		        {/eq}>
+	        		<a href="{:url('index', ['category_id'=> $v.id])}">{$v.name}</a>
+	        	</dd>
+				{/volist}
+			</dl>
+		</li>
+		<li class="layui-nav-item" style='float: right;'><a href="{:url('user/viewRegister')}">注册</a></li>
+		<li class="layui-nav-item" style='float: right;'>
+			{empty name='$Think.session.userId'}
+				<a href="{:url('index/user/viewLogin')}">登录</a>
+			{else/}
+				{neq name='$Think.session.userNc' value='0'}
+				<span class="layui-badge" title="未读消息" style="cursor: pointer;">
+					{$Think.session.userNc}
+				</span>
+				{/neq}
+				<a href="#" style="margin-left: 10px;">
+					{empty name='$Think.session.headImg'}
+						<img src="/static/images/user/headimg.jpg" class="layui-nav-img"/>
+					{else/}
+						<img src="{$Think.session.headImg}" class="layui-nav-img"/>
+					{/empty}
+					{$Think.session.userName}
+				</a>
+				<!-- 跳转到后台的管理中心 -->
+	            <dl class="layui-nav-child">
+	            	<dd><a href="{:url('index/user/viewNotification',['user_id'=> $Think.session.userId])}">未读消息</a></dd>
+	            	<dd><a href="{:url('index/user/viewUserInfo',['user_id'=> $Think.session.userId])}">管理中心</a></dd>
+	            	<dd><a href="{:url('index/topic/viewAddTopic')}">发布文章</a></dd>
+	            	<dd><a href="{:url('index/user/logout')}">退出登录</a></dd>
+	        	</dl>
+			{/empty}
+		</li>
+	</ul>
+</div>

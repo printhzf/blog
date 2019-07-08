@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+	    <meta name="renderer" content="webkit">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	    <title>{$Think.config.web_title}-用户列表</title>
+
+	    {load href="/static/buttons/buttons.css"}
+	    {load href="/static/fontawesome-5.6.3/css/all.css"}
+	    {load href="/static/layui/css/layui.css"}
+	    {load href="/static/common/js/jquery-3.3.1.min.js"}
+	    {load href="/static/layui/layui.js"}
+
+	    <style type="text/css">
+	    	.m10{
+	    		margin: 10px;
+	    	}
+	    	.mr10{
+	    		width: 26px;
+	    		height: 26px;
+	    		margin-right: 10px;
+	    	}
+	    	.ok{
+	    		font-size: 26px; 
+	    		color: #1E9FFF;
+	    	}
+	    	.close{
+	    		font-size: 26px; 
+	    		color: #FF5722;
+	    	}
+	    	.searchBox{
+	    		width: 100%;
+	    	}
+	    </style>
+	</head>
+	<body>
+		<div class="m10">
+			<!-- 搜索栏 -->
+			<div class="searchBox">
+				<form id="userForm" class="layui-form layui-form-pane" lay-filter="userForm" onclick="return false">
+					<div class="layui-form-item">
+						<div class="layui-input-inline" style="width: 260px;">
+							<label class="layui-form-label">用户名</label>
+							<div class="layui-input-block">
+								<input type="text" id="username" autocomplete="off" class="layui-input">
+							</div>
+						</div>
+						<div class="layui-input-inline" style="width: 260px;">
+							<label class="layui-form-label">登录IP</label>
+							<div class="layui-input-block">
+								<input type="text" id="ip" autocomplete="off" class="layui-input">
+							</div>
+						</div>
+						<div class="layui-input-inline" style="width: 300px;"> 
+							<label class="layui-form-label">状态</label>
+							<div class="layui-input-block">
+								<select id="sel_status">
+			                       	<option value="">请选择</option>
+			                       	<option value="1">正常</option>
+			                       	<option value="0">禁用</option>
+			                       	<option value="2">冻结</option>
+								</select>
+							</div>
+						</div>
+						<div class="layui-input-inline" style="width: 300px;"> 
+							<label class="layui-form-label">角色</label>
+							<div class="layui-input-block">
+								<select id="sel_role">
+									<option value="">请选择</option>
+									{volist name='roleList' id='v'}
+			                       		<option value="{$v.id}">{$v.title}</option>
+			                       	{/volist}
+								</select>
+							</div>
+						</div>
+						<div class="layui-inline"> 
+							<button id="searchBtn" class="layui-btn layui-btn-normal">
+								<i class="layui-icon layui-icon-search" style="font-size: 14px"></i>搜索
+							</button>
+							<button id="resetBtn" class="layui-btn layui-btn-primary">
+								<i class="layui-icon layui-icon-refresh" style="font-size: 14px"></i>
+							</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			<script id="status" type="text/html" >
+				{{#  if(d.status == '1'){ }}
+					<i class="layui-icon layui-icon-ok ok"></i>
+				{{#  } else { }}
+					<i class="layui-icon layui-icon-close close"></i>
+				{{#  } }}
+			</script>
+			<!-- 工具栏 -->
+			<script id="toolbar_userList" type="text/html" >
+				<div class="layui-btn-container">
+					<button class="button button-plain button-border button-square button-royal button-small mr10" lay-event="create" title="添加用户">
+						<i class="fa fa-plus"></i>
+					</button>
+					<button class="button button-plain button-border button-square button-highlight button-small mr10" lay-event="edit" title="编辑用户">
+						<i class="fa fa-edit"></i>
+					</button>
+					<button class="button button-plain button-border button-square button-caution button-small mr10" lay-event="delete" title="删除用户">
+						<i class="fa fa-trash"></i>
+					</button>
+				</div>
+			</script>
+			<!-- 用户表格 -->
+			<table id="userList" lay-filter="userList"></table>
+			<!-- 行内按钮 -->
+			<script id="tool_userList" type="text/html">
+				<button class="button button-plain button-border button-square button-highlight button-small mr10" lay-event="editOne" title="编辑用户">
+					<i class="fa fa-edit"></i>
+				</button>
+				<button class="button button-plain button-border button-square button-caution button-small mr10" lay-event="deleteOne" title="删除用户">
+					<i class="fa fa-trash"></i>
+				</button>
+			</script>
+ 		</div>
+		<script>
+		var option = {
+			elem: '#userList'
+			,toolbar: '#toolbar_userList'
+			,height: 600
+			,even: true
+			,cellMinWidth: 80 //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+			,url: 'readuser' //数据接口
+			,page: true //开启分页
+			,cols: [[ //表头
+				{type: 'checkbox'}
+				,{type: 'numbers', title: '序号', width: 80}
+				,{field: 'username', title: '用户名'}
+				,{field: 'email', title: '邮箱', width:200}
+				,{field: 'role', title: '角色', width:160}
+				,{field: 'status', title: '状态', width:80, sort: true, templet: '#status'}
+				,{field: 'last_login_ip', title: '上次登录IP', width: 180, sort: true}
+				,{field: 'last_login_time', title: '上次登录时间', width: 180, sort: true}
+				,{fixed: 'right', title:'操作', toolbar: '#tool_userList', width:120}
+			]]
+		};
+		layui.use(['table','form'], function(){
+			var form  = layui.form
+			,table = layui.table;
+			table.render(option);
+			form.render('select');
+
+			// 工具栏事件
+			table.on('toolbar(userList)', function(obj){
+				var checkStatus = table.checkStatus(obj.config.id);
+				var data = checkStatus.data;	
+				var length = data.length;
+				switch(obj.event){
+					case 'create':
+						editUser(0,true);			
+					break;
+					case 'edit':	
+						if (length == 0 || length > 1) {
+							layer.msg('请勾选一项', {icon:5});
+						} else {
+							editUser(data[0]['id']);
+						}
+					break;
+					case 'delete':
+						var idArr = [];
+						$.each(data, function(index, item){
+							idArr.push(item.id);
+						})
+						if (idArr.length > 0) {
+							deleteUser(idArr);
+						} else {
+							layer.msg('请至少勾选一项', {icon:5});
+						}
+					break;
+				};
+			});
+
+			// 监听行工具事件
+			table.on('tool(userList)', function(obj){
+				var data = obj.data;
+				var id = data.id;
+				switch(obj.event)
+				{
+					case 'editOne' :	
+						editUser(id);
+					break;
+					case 'deleteOne' :
+						var idArr = [id];
+						deleteUser(idArr);
+					break;
+				}
+			});
+
+			// 点击搜索
+			$('#searchBtn').on('click', function(){
+	        	var condition = {
+					username : $('#username').val(),
+					last_login_ip : $('#ip').val(),
+					group_id : $('#sel_role').val(),
+					status   : $('#sel_status').val(),
+	        	}
+				table.reload('userList',{
+					where: {condition}
+					,page : {curr:1}
+				});
+				return false;
+			});
+
+			// 点击重置
+			$('#resetBtn').on('click', function(){
+				$('#userForm')[0].reset();
+			});
+
+			// 编辑用户
+			function editUser(id, flag) {
+				var url = 'index.php/edituser/'+id;
+				var title = flag === true ? '用户新增页' : '用户编辑页';
+				var index = parent.layer.open({
+					type : 2
+					,title : title
+					,shadeClose: true
+					,area : ['500px','400px']
+					,fixed : false //不固定
+					,content : url
+					,end : function() {}
+				});
+			}
+
+			// 删除用户
+			function deleteUser(idArr) {
+				var str = '是否确定删除？';
+				layer.confirm(str, {btn: ['确定', '取消'], title: "提示"}, function () {
+					$.ajax({
+						type : 'POST'
+						,data : {'idArr' : idArr}
+						,url  : 'deluser' 
+						,success : function(res) {
+							layer.msg(res.msg, {time: 1200}, function() {
+								if (res.code == 200) {
+									window.location.reload();
+								}
+							});
+						}
+					});
+				});
+			}
+
+		});
+</script>
+	</body>
+</html>

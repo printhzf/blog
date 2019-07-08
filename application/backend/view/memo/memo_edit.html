@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+	    <meta name="renderer" content="webkit">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	    <title>{$Think.config.web_title}-备忘录编辑页</title>
+	    {load href="/static/layui/css/layui.css"}
+	    {load href="/static/common/js/jquery-3.3.1.min.js"}
+    	{load href="/static/layui/layui.all.js"}
+    	{load href="__BACKJS__/memo/memo_edit.js"}
+	    <style type="text/css">
+	    	#content{
+	    		height: 260px;
+	    	}
+	    	#memoForm{
+	    		padding: 10px
+	    	}
+	    </style>
+	</head>
+	<body>
+		<form id="memoForm" class="layui-form layui-form-pane" lay-filter="memoForm">
+			{:token()}
+			<input type="hidden" name="mid" id="mid" value="{$modelObj.id}">
+			<input type="hidden" name="uid" id="uid" value="{$modelObj.uid}">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">提醒日期</label>
+					<div class="layui-input-block">
+						<input type="text" name="deadline" id="deadline" autocomplete="off" class="layui-input" value="{$modelObj.deadline}">
+					</div>
+				</div>
+			</div>
+			<div class="layui-form-item layui-form-text">
+				<label class="layui-form-label">备忘内容</label>
+				<div class="layui-input-block">
+					<textarea placeholder="请输入内容" class="layui-textarea" name="content" id="content">{$modelObj.content|default=''}</textarea>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<div style="float: right;">
+					<button class="layui-btn layui-btn-primary" lay-filter="reset">
+						<i class="layui-icon layui-icon-refresh"></i>重置
+					</button>
+					<button class="layui-btn" lay-filter="save"  lay-submit>
+						<i class="layui-icon layui-icon-ok"></i>提交
+					</button>
+				</div>
+			</div>
+		</form>
+	</body>
+</html>

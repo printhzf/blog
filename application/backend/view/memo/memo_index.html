@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+	    <meta name="renderer" content="webkit">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	    <title>{$Think.config.web_title}-备忘录</title>
+	    {load href="/static/fontawesome-5.6.3/css/all.css"}
+	    {load href="/static/layui/css/layui.css"}
+	    {load href="__BACKCSS__/index.css"}
+	    {load href="__BACKCSS__/memo/memo_index.css"}
+	</head>
+	<body>
+		<!-- 备忘录区域 -->
+		<div id="memoListBox">
+			<div class="layui-col-md12">
+				<div class="layui-card">
+					<div class="layui-card-header">
+						<div mid="0">
+							<i class="layui-icon layui-icon-add-circle-fine editBtn" title="新增备忘录"></i>
+							<!-- <i class="layui-icon layui-icon-top" style="font-size: 26px"></i> -->
+						</div>
+						<form action="{:url('/memo')}" method="GET">
+							<div class="layui-form-item">
+								<div class="layui-inline"> 
+									<label class="layui-form-label">时间范围：</label>
+									<div class="layui-input-block">
+										<input type="text" id="datetimeRange" name="datetimeRange" class="layui-input" autocomplete="off" placeholder='开始日期 至 结束日期'>
+									</div>
+								</div>
+								<div class="layui-input-inline" style="width: 240px;">
+									<label class="layui-form-label">备忘内容：</label>
+									<div class="layui-input-block">
+										<input type="text" name="keywords" placeholder="请输入关键字" autocomplete="off" class="layui-input">
+									</div>
+								</div>
+								<div class="layui-inline"> 
+									<button type="submit" id="searchBtn" class="layui-btn layui-btn-normal" lay-submit>
+										<i class="layui-icon layui-icon-search" style="font-size: 14px"></i>搜索
+									</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+		    </div>
+			{notempty name='memoList'}				
+			<div class="layui-row layui-col-space15">
+					{volist name='memoList' id='v' empty="暂无数据"}
+					<div class="layui-col-md6 memoBox">
+						<div class="layui-card">
+							<div class="layui-card-header">
+								<div class="deadlineBox">
+									{$v.deadline}
+								</div>
+								<div class="toolBox" mid="{$v.id}">
+									<div id="moreBtn{$v.id}">
+										<i class="layui-icon layui-icon-more icon"></i>
+									</div>
+									<div id="toolBar{$v.id}" class="toolBar">
+										<i class="layui-icon layui-icon-edit icon editBtn" title="编辑"></i>
+										<i class="layui-icon layui-icon-delete icon deleteBtn" title="删除"></i>
+										{eq name="v.is_top" value="0"}
+											<i class="layui-icon layui-icon-top icon stickBtn" title="置顶" is_top='1'></i>
+										{else/}
+											<i class="layui-icon layui-icon-top icon stickBtn cancle" title="取消置顶" is_top='0'></i>
+										{/eq}
+									</div>
+								</div>
+							</div>
+							<div class="layui-card-body tip" >
+								{$v.content}
+							</div>
+						</div>
+					</div>
+					{/volist}
+			</div>
+			<div class="pageBox">
+				{$memoList|raw}
+			</div>
+			{else/}
+				<span class="highlight" style="display: block;margin-top: 80px;text-align: center;font-size: 28px;">
+					暂无数据
+				</span>
+			{/notempty}
+		</div> 
+		{load href="/static/common/js/jquery-3.3.1.min.js"}
+    	{load href="/static/layui/layui.all.js"}
+    	{load href="__BACKJS__/memo/memo_index.js"}
+	</body>
+</html>

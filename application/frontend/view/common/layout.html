@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>
+		{$Think.config.web_title} -
+		{block name='title'}
+			{$title|default="首页"}
+		{/block}
+	</title>
+
+	{block name='css'}{/block}
+	
+	<!-- 使用load标签加载资源文件 -->
+    {load href="/static/jquery-ui/jquery-ui.theme.css"}
+    {load href="/static/layui/css/layui.css"}
+    {load href="/static/frontend/css/layout.css"}
+    {load href="/static/layui/layui.js"}
+    {load href="/static/common/js/jquery-3.3.1.min.js"}
+    {load href="/static/jquery-ui/jquery-ui.js"}
+</head>
+<body>
+	<!-- 导航 -->
+	{include file="common/header" /}
+	<div class="container">	
+		{block name='container'}
+		<div class="container-index flex-space-around">
+			<div class="container-index-l">
+				<!-- 搜索提示 -->
+				{notempty name='Request.get.keywords'}
+					<div class="keywordsTip box">
+						<h1>搜索到的与 <span class="highlight">{$Request.get.keywords}</span> 相关的文章</h1>
+					</div>
+				{/notempty}
+				<!-- 文章列表 -->
+				<div class="topicsList box">
+					{notempty name='topicsList'}
+						<h2>
+							{$cateName}
+							<button id="addtopicBtn" class="layui-btn layui-btn-primary layui-btn-sm" style="float: right;" title="发表文章">
+								<a href="{:url('index/index/viewAddTopic')}" target='_blank'>
+									<i class="layui-icon layui-icon-edit" style="color: #1E9FFF;"></i>
+								</a>
+							</button>
+						</h2>
+						<hr/>
+						{include file='topic/topicsList'}
+						<div class="pageBox">				
+							{$page|raw}
+						</div>
+					{else/}
+						<div style="text-align: center;font-size: 28px">
+							<span class="highlight" >暂无内容</span>
+						</div>
+					{/notempty}
+				</div>
+			</div>
+			<div class="container-index-r">	
+				<!-- 搜索栏 -->
+				<div class="searchBar box">
+					<form action="{:url('index')}" method="get">
+				    <div class="layui-inline">
+						<div class="layui-input-inline">
+							<input id="search" name="keywords" type="text" autocomplete="off" class="layui-input" layui-search>
+						</div>
+						<button type="submit" id="searchBtn" class="layui-btn" lay-submit>搜索</button>
+				    </div>
+					</form>
+				</div>
+				<!-- 最新文章标题列表 -->
+				<div class="hotList box">
+					<h2>热门文章</h2><hr/>
+					<ul>
+					{volist name='hotList' id='list'}
+						<li><a href="{:url('frontend/topic', ['topic_id'=> $list.id])}">·{$list.title}</a></li>
+					{/volist}
+					</ul>
+				</div>
+				<!-- 标签云 -->
+				<div class="tagCloud box">
+					<h2>标签云</h2><hr/>
+					{block name='cloud'}{/block}
+				</div>
+			</div>
+		</div>
+		{/block}
+	</div>
+	{include file="common/footer" /}
+	{block name='js'}
+	<script type="text/javascript">
+		//注意：导航 依赖 element 模块，否则无法进行功能性操作
+		layui.use(['element','layer'], function(){
+		    var $ = layui.jquery, 
+		    	element  = layui.element,
+		    	layer    = layui.layer;
+		});
+		$(".delTopicBtn").bind('click',function(){
+	    	var topicId = $(this).attr('topicId');
+	    	var userId  = $(this).attr('userId');
+			$.ajax({
+	            url    : '/index/index/deleteTopic',
+	            type   : 'post',
+	            data   :  {'topicId':topicId, 'userId':userId},
+	            success: function(res){
+	            	layer.msg(res.msg);
+	            }
+	        });
+	    });
+		$(".topic-header-collectBtn").bind('click',function(){
+			var topicId = $(this).attr('topicId');
+			var userId  = $(this).attr('userId');
+			var collectBtn = '#collectBtn-'+topicId;
+			if(userId){
+				$.ajax({
+	                url    : '/index/index/collect',
+	                type   : 'post',
+	                data   :  {'topicId':topicId, 'userId':userId},
+	                success: function(res) {
+	                	if (res.code == 200) {
+	                		$(collectBtn).html("<i class='layui-icon layui-icon-star-fill'></i>");
+	                	} else {
+	                		$(collectBtn).html("<i class='layui-icon layui-icon-star'></i>");
+	                	}
+	                	layer.msg(res.msg);
+	                }
+		        })
+			}else{
+				layer.msg('请登录！', {icon:5});
+			}
+			
+		});
+		
+		// 滚动时保存滚动位置
+		$(window).scroll(function() {
+			if ($(document).scrollTop()!=0) {
+				sessionStorage.setItem("offsetTop", $(window).scrollTop());
+			}
+		});
+
+		// onload时，取出并滚动到上次保存位置
+		window.onload = function() {
+			var offset = sessionStorage.getItem("offsetTop");
+			$(document).scrollTop(offset);
+		};
+	</script>
+	{/block}
+</body>
+</html>

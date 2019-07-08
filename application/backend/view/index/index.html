@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+	    <meta name="renderer" content="webkit">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	    <title>{$Think.config.app_name}-后台首页</title>
+	    {load href="/static/font-awesome-4.7.0/css/font-awesome.css"}
+	    {load href="/static/layui/css/layui.css"}
+	    {load href="__BACKCSS__/index.css"}
+
+	</head>
+	<body>
+	<!-- 头部导航 -->
+	<div class="layui-header">
+		<!-- 闹钟URL -->
+		<input type="hidden" name="hidden-url-clock" value="{:url('clock')}">
+		<div id="samrtzIcon">
+			<!-- 默认首页高亮显示-->
+			<img src="/static/images/logo.png" /> 
+			<span><b>SmartZ</b></span>
+		</div>
+		<div id="topMenu">
+		<ul class="layui-nav layui-layout-left" style="background: white;">
+			<li class="layui-nav-item layadmin-flexible" lay-unselect="">
+				<i class="fa fa-outdent" id="flexible-btn" title="折叠"></i>
+			</li>
+			<li class="layui-nav-item layadmin-flexible" lay-unselect="">
+				<i class="fa fa-refresh" id="refresh-btn" title="刷新" ></i>
+			</li>
+			<li class="layui-nav-item layadmin-flexible" lay-unselect="">
+				<i class="fa fa-bookmark" id="mark-btn" title="便签" ></i>
+			</li>
+		</ul>
+		<ul class="layui-nav layui-layout-right">
+			<li class="layui-nav-item">
+				{assign name='userInfo' value='$Think.session.USER_INFO_SESSION'}
+				{empty name='userInfo.userId'}
+					<a href="{:url('./login')}" style="color: #000;">登录</a>
+				{else/}
+					<a href="#" style="margin-left: 10px;">
+						{empty name='userInfo.headImg'}
+							<img src="/static/images/user/headimg.jpg" class="layui-nav-img"/>
+						{else/}
+							<img src="{$Think.session.headImg}" class="layui-nav-img"/>
+						{/empty}
+						<span>{$userInfo.userName}</span>
+					</a>
+					<!-- 跳转到后台的管理中心 -->
+		            <dl class="layui-nav-child">
+		           <!--  	<dd><a class="site-url" data-title="管理中心" data-id="0" data-url="{:url('/index/user/viewuserinfo',['id'=> $Think.session.userId])}">管理中心</a></dd> -->
+		           		<dd><a class="site-url" data-title="个人中心" data-id="0" data-url="{:url('./userinfo',['id'=> $userInfo.userId])}">管理中心</a></dd>
+		            	<dd><a href="{:url('./logout')}" >退出登录</a></dd>
+		        	</dl>
+				{/empty}
+			</li>
+		</ul>
+		</div>
+	</div>
+	<!-- 侧边导航 -->
+	<ul class="layui-nav layui-nav-tree layui-nav-side" lay-filter="treenav" style="margin-top:60px"> 
+	    <li class="layui-nav-item">
+	    	<a href="javascript:;" class="site-url" data-title="内容管理">
+	    		<i class="fa fa-fw fa-folder"> 内容管理</i>
+	    	</a>
+	    	<dl class="layui-nav-child">
+	    		<dd>
+	    			<a href="javascript:;" class="site-url" data-title="文章管理" data-id="6" data-url="{:url('./topic')}">
+		    			<i class="fa fa-fw fa-book"> 文章管理</i>
+		    		</a>
+	    		</dd>
+	    		<dd>
+	    			<a href="javascript:;" class="site-url" data-title="文章管理" data-id="7" data-url="{:url('./reply')}">
+		    			<i class="fa fa-fw fa-comments"> 评论管理</i>
+		    		</a>
+	    		</dd>
+	            
+	            <dd>
+	            	<a href="javascript:;" class="site-url" data-title="资源管理" data-id="8" data-url="{:url('filemanager/index')}">
+		            	<i class="fa fa-fw fa-file"> 资源管理</i>
+		            </a>
+		    	</dd>
+	            <dd>
+	            	<a href="javascript:;" class="site-url" data-title="数据管理" data-id="9" data-url="{:url('./datam')}">
+		            	<i class="fa fa-fw fa-database"> 数据管理</i>
+		            </a>
+	            </dd>
+	            <dd>
+	            	<a href="javascript:;" class="site-url" data-title="操作日志" data-id="10" data-url="{:url('./log')}">
+		            	<i class="fa fa-fw fa-calendar"> 操作日志</i>
+		            </a>
+	            </dd>
+	        </dl>
+	    </li>
+	    <li class="layui-nav-item">
+	    	<a href="javascript:;" class="site-url" data-title="系统配置">
+	    		<i class="fa fa-fw fa-cog"> 系统配置</i>
+	    	</a>
+	    	<dl class="layui-nav-child">
+		    	<a href="javascript:;" class="site-url" data-title="菜单配置" data-id="1" data-url="{:url('./menu')}">
+		    		<i class="fa fa-fw fa-list"> 菜单配置</i>
+		    	</a>
+	    		<dd>
+	    			<a href="javascript:;" class="site-url" data-title="网站配置" data-id="10" data-url="{:url('./web')}">
+		    			<i class="fa fa-fw fa-globe"> 网站配置</i>
+		    		</a>
+	    		</dd>
+	            <dd>
+	            	<a href="javascript:;" class="site-url" data-title="邮件配置" data-id="11" data-url="{:url('./emil')}">
+		            	<i class="fa fa-fw fa-envelope"> 邮件配置</i>
+		            </a>
+	            </dd>
+	            <dd>
+	            	<a href="javascript:;" class="site-url" data-title="短信配置" data-id="12"  data-url="{:url('./sms')}">
+		            	<i class="fa fa-fw fa-tty"> 短信配置</i>
+		            </a>
+		    	</dd>
+		    	<dd>
+	            	<a href="javascript:;" class="site-url" data-title="URL配置" data-id="13"  data-url="{:url('./url')}">
+		            	<i class="fa fa-fw fa-link"> URL配置</i>
+		            </a>
+		    	</dd>
+		    	<dd>
+	            	<a href="javascript:;" class="site-url" data-title="URL配置" data-id="13"  data-url="{:url('./url')}">
+		            	<i class="fa fa-fw fa-handshake-o"> API配置</i>
+		            </a>
+		    	</dd>
+	        </dl>
+	    </li>
+	    <li class="layui-nav-item">
+	    	<a href="javascript:;" class="site-url" data-title="权限管理">
+	    		<i class="fa fa-fw fa-shield"> 权限管理</i>
+	    	</a>
+	    	<dl class="layui-nav-child">
+	    		<dd>
+	    			<a href="javascript:;" class="site-url" data-title="用户列表" data-id="14" data-url="{:url('./user')}">
+		    			<i class="fa fa-fw fa-users"> 用户列表</i>
+		    		</a>
+	    		</dd>
+	            <dd>
+	            	<a href="javascript:;" class="site-url" data-title="权限列表" data-id="15" data-url="{:url('./rule')}">
+		            	<i class="fa fa-fw fa-money"> 权限列表</i>
+		            </a>
+	            </dd>
+	            <dd>
+	            	<a href="javascript:;" class="site-url" data-title="角色列表" data-id="16" data-url="{:url('./role')}">
+			            <i class="fa fa-fw fa-address-card"> 角色列表</i>
+			        </a>
+		        </dd>
+	        </dl>
+	    </li>
+	    <li class="layui-nav-item">
+	    	<a href="javascript:;" class="site-url" data-title="常用工具">
+	    		<i class="fa fa-fw fa-wrench"> 常用工具</i>
+	    	</a>
+	    	<dl class="layui-nav-child">
+	    		<dd>
+	    			<a href="javascript:;"  class="site-url" data-title="规范文档" data-id="2" data-url="{:url('./doc')}">
+	    				<i class="fa fa-fw fa-file-text"> 规范文档</i>
+	    			</a>
+	    		</dd>
+	    		<dd>
+	    			<a href="javascript:;"  class="site-url" data-title="UI素材" data-id="3" data-url="{:url('./ui')}">
+	    				<i class="fa fa-fw fa-briefcase"> UI素材</i>
+	    			</a>
+	    		</dd>
+	    		<dd>
+	    			<a href="javascript:;"  class="site-url" data-title="备忘录" data-id="4" data-url="{:url('./memo')}">
+	    				<i class="fa fa-fw fa-bell"> 备忘录</i>
+	    			</a>
+	    		</dd>
+	    		<dd>
+	    			<a href="javascript:;"  class="site-url" data-title="数据分析" data-id="5" data-url="{:url('./analysis')}">
+	    				<i class="fa fa-fw fa-area-chart"> 数据分析</i>
+	    			</a>
+	    		</dd>
+	    	</dl>
+	    </li>
+	</ul>
+
+	<div class="layui-tab layui-tab-brief main" lay-filter="contentnav" lay-allowClose="true">
+	    <ul class="layui-tab-title">
+	        <li class="layui-this">首页</li>
+	    </ul>
+	    <ul class="layui-bg-green rightmenu">
+	        <li data-type="closethis">关闭当前</li>
+	        <li data-type="closeall">关闭所有</li>
+	    </ul>
+	    <div class="layui-tab-content">
+	        <div class="layui-tab-item layui-show">
+	        	{include file='index/content'}
+	        </div>
+	    </div>
+		<!-- 底部固定区域 -->
+	    <!-- <div class="layui-footer" style="text-align: center;background-color: #393D49;padding: 2px;color: #fff">
+		    © smartz.top
+		</div> -->
+	</div>
+	
+	{block name='js'}
+		{load href="/static/common/js/jquery-3.3.1.min.js"}
+	    {load href="/static/layui/layui.all.js"}
+	    {load href="__BACKJS__/index.js"}
+	{/block}
+	</body>
+</html>

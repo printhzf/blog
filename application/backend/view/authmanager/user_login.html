@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+	    <meta name="renderer" content="webkit">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	    <title>{$Think.config.web_title}-登录页</title>
+
+	    {load href="__STATIC__/layui/css/layui.css"}
+	    {load href="__STATIC__/js/jquery-3.3.1.min.js"}
+	    {load href="__STATIC__/layui/layui.js"}
+	    <style type="text/css">
+	    	.login-body .login-box h3{
+	    		color: #444;
+	    		font-size: 22px;
+	    		font-weight: 100;
+	    		text-align: center; 
+	    	}
+	    	.login-box{
+	    		position: fixed;
+	    		top: 0;
+	    		bottom: 0;
+	    		left: 0;
+	    		right: 0;
+	    		margin: auto;
+	    		width: 320px;
+	    		height: 241px;
+	    		max-height: 300px;
+	    	}
+	    	.login-box .layui-input[name='verify'] {
+	    		display: inline-block;
+	    		width: 48%;
+	    		vertical-align: top;
+	    	}
+	    	.login-box img{
+	    		display: inline-block;
+	    		width: 47%;
+	    		height: 38px;
+	    		border: none;
+	    		vertical-align: top;
+	    		cursor: pointer;
+	    		margin-left: 2%;
+	    	}
+	    	.login-box button{
+	    		width: 300px;
+	    	}
+	    </style>
+	</head>
+	<body class="login-body body">
+		<div class="login-box">
+		    <form id="form_login" class="layui-form layui-form-pane">
+				<div class="layui-form-item">
+					<h3>SmartZ系统登录</h3>
+				</div>
+		        <!-- CSRF Token -->
+		        {:token()}
+		        <div class="layui-form-item">
+		        	<label class="layui-form-label">用户名</label>
+			        <div class="layui-input-inline">
+			            <input type="text" name="username" lay-verify="username1" autocomplete="off" class="layui-input" value="{$usernmae|default=''}">
+			        </div>
+		        </div>
+		        <div class="layui-form-item">
+		        	<label class="layui-form-label">密码</label>
+			        <div class="layui-input-inline">
+			            <input type="password" name="password" lay-verify="password1" autocomplete="off" class="layui-input" value="{$password|default=''}">
+			        </div>
+			    </div>
+			    <div class="layui-form-item">
+		        	<label class="layui-form-label">验证码</label>
+	                <div class="layui-input-inline">
+	                    <input type="text" name="verify" autocomplete="off" autocomplete="off" class="layui-input" maxlength="3">
+	                    <!-- 验证码 -->
+					    <img id="verify_img" src="{:url('/verify')}" alt="验证码加载中" onclick="this.src='{:captcha_src()}?'+Math.random();">
+					    
+	                </div>
+		        </div>
+	            
+		        <div class="layui-input-inline login-btn">
+		            <button type="submit" class="layui-btn"  lay-filter="add" lay-submit>登录</button>
+		        </div>
+		        <hr/>
+		        <p>
+		        	<!-- <a href="{:url('index/user/viewRegister')}" class="fl">立即注册</a> -->
+		        	<a href="javascript:;" class="fr">忘记密码？</a>
+		        </p>
+		    </form>
+		</div>
+		<script type="text/javascript">
+			// 页面重载时，从seesionStorage得到用户之前输入的值并显示在页面，方便修改
+			window.onload = function (){	
+				if (window.sessionStorage) {
+					var username = sessionStorage.getItem('username');
+					var password = sessionStorage.getItem('password');
+					if (username != '' || username != null) {
+						$("input[name='username']").val(username);
+					}
+					if (password != '' || password != null) {
+						$("input[name='password']").val(password);
+					}
+				} 
+			}
+			// 将input值存入seesionStorage
+			function saveToStorage() {
+				if (window.sessionStorage) {
+					var username = $("input[name='username']").val();
+					var password = $("input[name='password']").val();
+					if (username != '' || username != null) {
+						sessionStorage.setItem('username', username);
+					}
+					if (password != '' || password != null) {
+						sessionStorage.setItem('password', password);
+					}
+				} 
+			}
+			layui.use(['form','jquery','layer'], function () {
+		        var form   = layui.form;
+		        var $      = layui.jquery;
+		        var layer  = layui.layer;
+		        form.verify({
+		            // 支持函数式/数组的形式
+		            username: function(value, item){ //value：表单的值、item：表单的DOM对象
+		                if(!new RegExp("^[a-zA-Z0-9_\u4e00-\u9fa5\\s·]+$").test(value)){
+		                    return '用户名不能有特殊字符';
+		                }
+		                if(/(^\_)|(\__)|(\_+$)/.test(value)){
+		                    return '用户名首尾不能出现下划线\'_\'';
+		                }
+		                if( /^[\S]{4,16}$/.test(value)){
+		                    return '用户名必须4到16位，且不能出现空格';
+		                }
+		                if(/^\d+\d+\d$/.test(value)){
+		                    return '用户名不能全为数字';
+		                }
+		            }
+		            // 数组的两个值分别代表：[正则匹配、匹配不符时的提示文字]
+		            ,password: [
+		                /^[\S]{6,16}$/
+		                ,'密码必须6到16位，且不能出现空格'
+		            ] 
+		        });      
+		        // 添加表单监听事件,提交登录信息
+		        form.on('submit(add)', function() {
+		        	// saveToStorage();
+		        	var data = $("#form_login").serialize();
+		            $.ajax({
+		                url    : 'checklogin',
+		                type   : 'POST',
+		                data   :  data,
+		                success: function(res){
+		                	console.log(res);return;
+		                	layer.msg(res.message, {time: 1200}, function(){
+								if (res.code == 200) {	
+									window.location.href = "index";
+								} else {
+									getNewToken();
+								}
+							});
+		                }
+		            })
+		            // 防止页面跳转
+		            return false;
+		        });
+		 
+		    });	
+		</script>
+	</body>
+</html>

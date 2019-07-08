@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+	    <meta name="renderer" content="webkit">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	    <title>{$Think.config.web_title}-角色权限列表</title>
+
+	    {load href="/static/buttons/buttons.css"}
+    	{load href="/static/fontawesome-5.6.3/css/all.css"}
+	    {load href="/static/layui/css/layui.css"}
+	    {load href="/static/common/js/jquery-3.3.1.min.js"}
+	    {load href="/static/layui/layui.js"}
+	    
+	    <style type="text/css">
+	    	.m10{
+	    		margin: 10px;
+	    	}
+	    	.mr10{
+	    		width: 26px;
+	    		height: 26px;
+	    		margin-right: 10px;
+	    	}
+	    	.ok{
+	    		font-size: 26px; 
+	    		color: #1E9FFF;
+	    	}
+	    	.close{
+	    		font-size: 26px; 
+	    		color: #FF5722;
+	    	}
+	    </style>
+	</head>
+	<body>
+		<div class="m10">
+			<!-- 搜索栏 -->
+			<form id="roleForm" class="layui-form layui-form-pane" lay-filter="ruleForm" onclick="return false">
+				<div class="layui-form-item">
+					<div class="layui-input-inline" style="width: 260px;">
+						<label class="layui-form-label">角色名称</label>
+						<div class="layui-input-block">
+							<input type="text" id="title" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-input-inline" style="width: 260px;">
+						<label class="layui-form-label">描述</label>
+						<div class="layui-input-block">
+							<input type="text" id="brief" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-inline"> 
+						<button id="searchBtn" class="layui-btn layui-btn-normal">
+							<i class="layui-icon layui-icon-search" style="font-size: 14px"></i>搜索
+						</button>
+						<button id="resetBtn"  class="layui-btn layui-btn-primary">
+							<i class="layui-icon layui-icon-refresh" style="font-size: 14px"></i>
+						</button>
+					</div>
+				</div>
+			</form>
+			<!-- 状态样式转换 -->
+			<script id="status" type="text/html" >
+				{{#  if(d.status == '1'){ }}
+					<i class="layui-icon layui-icon-ok ok"></i>
+				{{#  } else { }}
+					<i class="layui-icon layui-icon-close close"></i>
+				{{#  } }}
+			</script>
+			<!-- 工具栏 -->
+			<script id="toolbar_ruleList" type="text/html" >
+				<div class="layui-btn-container">
+					<button class="button button-plain button-border button-square button-royal button-small mr10" lay-event="create" title="添加角色">
+						<i class="fa fa-plus"></i>
+					</button>
+					<button class="button button-plain button-border button-square button-highlight button-small mr10" lay-event="edit" title="编辑角色">
+						<i class="fa fa-edit"></i>
+					</button>
+					<button class="button button-plain button-border button-square button-caution button-small mr10" lay-event="delete" title="删除角色">
+						<i class="fa fa-trash"></i>
+					</button>
+				</div>
+			</script>
+			<!-- 角色表格 -->
+			<table id="roleList" lay-filter="roleList"></table>
+			<!-- 行内按钮 -->
+			<script id="tool_roleList" type="text/html">
+				<button class="button button-plain button-border button-square button-highlight button-small mr10" lay-event="editOne" title="编辑角色">
+					<i class="fa fa-edit"></i>
+				</button>
+				<button class="button button-plain button-border button-square button-caution button-small mr10" lay-event="deleteOne" title="删除角色">
+					<i class="fa fa-trash"></i>
+				</button>
+			</script>
+ 		</div>
+		<script src="/static/layui/layui.js"></script>
+		<script>
+		var	option = {
+			elem: '#roleList'
+			,toolbar: '#toolbar_ruleList'
+			,height: 600
+			,even: true
+			,cellMinWidth: 80 //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+			,url: 'readrule' //数据接口
+			,page: true //开启分页
+			,cols: [[ //表头
+				{type: 'checkbox'}
+				,{type: 'numbers', title: '序号', width: 60}
+				,{field: 'title', title: '角色', width:120}
+				,{field: 'brief', title: '描述'}
+				,{field: 'rules', title: '拥有权限'}
+				,{field: 'status', title: '状态', width:80, sort: true, templet: '#status'}
+				,{fixed: 'right', title:'操作', toolbar: '#tool_roleList', width:120}
+			]]
+		};
+		layui.use(['table','form'], function(){
+			var table  = layui.table
+				,form  = layui.table;
+
+			// 初始化表格
+			table.render(option);
+
+			// 工具栏事件
+			table.on('toolbar(roleList)', function(obj){
+				var checkStatus = table.checkStatus(obj.config.id);
+				var data = checkStatus.data;
+				var length = data.length;
+				switch(obj.event){
+					case 'create':
+						editRole(0, true);				
+					break;
+					case 'edit':
+						if (length == 0 || length > 1) {
+							layer.msg('请勾选一项', {icon:5});
+						} else {
+							editRole(data[0]['id']);
+						}
+					break;
+					case 'delete':
+						var idArr = [];
+						$.each(data, function(index, item){
+							idArr.push(item.id);
+						})
+						deleteRole(idArr);
+					break;
+				};
+			});
+
+			// 监听行工具事件
+			table.on('tool(roleList)', function(obj){
+				var data = obj.data;
+				var id = data.id;
+				switch(obj.event)
+				{
+					case 'editOne' :	
+						editRole(id);
+					break;
+					case 'deleteOne' :
+						var idArr = [id];
+						deleteRole(idArr);
+					break;
+				}
+			});
+
+			// 点击搜索
+			$('#searchBtn').on('click', function(){
+				var cond = {
+					title : $('#title').val(),
+					brief : $('#brief').val(),
+	        	}
+				table.reload('roleList',{
+					where: {cond}
+					,page : {curr:1}
+				});
+				return false;
+			});
+
+			// 点击重置
+			$('#resetBtn').on('click', function(){
+				$('#roleForm')[0].reset();
+			});
+
+			// 编辑角色
+			function editRole(id, flag) {
+				var url = 'index.php/editrole/'+id;
+				var title = flag === true ? '新增规则' : '编辑规则';
+				var index = parent.layer.open({
+					type : 2
+					,title : title
+					,shadeClose: true
+					,area : ['600px','620px']
+					,fixed : false //不固定
+					,content : url
+					,end : function() {}
+				});
+			}
+
+			// 删除角色
+			function deleteRole(idArr) {
+				if (idArr.length > 0) {
+					var str = '是否确定删除？';
+					layer.confirm(str, {btn: ['确定', '取消'], title: "提示"}, function () {
+						$.ajax({
+							type : 'post'
+							,data : {'idArr' : idArr}
+							,url  : 'deleterole' 
+							,success : function(res) {
+								layer.msg(res.msg, {time: 1200}, function() {
+									if (res.code == 200) {
+										window.location.reload();
+									}
+								});
+							}
+						});
+					});
+				} else {
+					layer.msg('请至少勾选一项', {icon:5});
+				}
+			}
+		});
+</script>
+	</body>
+</html>

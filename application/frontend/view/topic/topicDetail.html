@@ -1,0 +1,379 @@
+{extend name='layout:layout' /}
+{block name='title'}
+	{__block__}
+{/block}
+{block name='css'}
+<style>
+	.detailsBox{
+		width: 1000px;
+	}
+	.detailsBox-l{
+		width: 680px;
+	}
+		.topicBox{
+			width : 100%;
+			height: 800px;
+			margin: 0 auto;
+		}
+		.replyBox{
+			width : 680px;
+			height: auto;
+			min-height: 300px;
+			margin: 0 auto;
+			margin-top: 20px;
+		}
+			.topicBox h3{ 
+				font-size: 50px;
+				text-align: center;
+			}
+			.topicBox ul{
+	    		width: 100%;
+			    display: block;
+			    overflow: hidden;
+			    white-space:nowrap;
+				margin: 10px 0px 10px 0px;
+			}
+			.topicBox li{
+			    list-style: none;
+			    display: inline-block;/*使li对象显示为一行*/
+			    margin-left: 15px;
+			    padding-right: 30px; 
+			}
+				.topic-body-top{
+					margin-bottom: 20px;
+				}	
+					.textareaBox{
+						width: 80%;
+					}
+					.replyBtnBox{
+						display: flex;
+						justify-content: flex-end;
+						padding-bottom: 10px;
+					}
+				.topic-body-bottom{
+					width: 100%;
+				    height: 30px;
+				    line-height: 30px;
+				}
+				.reply-body-parent{
+					margin-top: 10px;
+					border-bottom: 1px solid #ccc; 
+				}
+					.reply-children{
+						padding-top: 10px;
+						border-top: 1px solid #ccc;
+					}
+					.reply-headImg{
+						width: 30px;
+						height: 30px;
+						margin-right: 10px;
+					}
+					.reply-content{
+						width: 750px;
+					}
+					.reply-content-top{
+						width: 100%;
+						height: 22px;
+						line-height: 22px;
+					}
+					.reply-content-top a{
+						color: #2965b1;
+					}
+					.reply-content-top a:hover{
+						color: #23527c;
+					}
+					.reply-date{
+						float:right;
+					}
+					.addReplyBtn{
+						float:right;
+						margin-left: 10px;
+						cursor: pointer;
+						color: #2965b1;
+					}
+					.reply-text{
+						width: 100%;
+						height: 30px;
+					    line-height: 30px;
+					}
+					.delReplyBtn{
+						float: right;
+						margin-right: 5px;
+					}
+	.detailsBox-r{
+		width: 280px;
+	}
+		.userInfo{
+			width: 100%;
+			height: 300px;
+		}
+			.userInfo-container{
+                width: 100%;
+                height: 100%;
+            }
+                .userInfo-headImg{
+                    width: 132px;
+                    height: 132px;
+                    margin: 0 auto;
+                }
+                .userInfo-text{
+                    margin-top: 20px;
+                }
+                .userInfo-text i{
+                    font-size: 21px;
+                }
+                .userInfo-text span{
+                    font-size: 30px;
+                }
+
+</style>
+{/block}
+{block name='container'}
+	<div class="detailsBox flex-space-between">
+		<div class="detailsBox-l">
+			<div class="topicBox box">
+			    <div class="topic-header">
+			    	<div class="topic-header-top">
+				        <h3>
+				        	{$topic.title}
+					        {eq name='topic.user_id' value='$Think.session.userId'}
+				                <button class="layui-btn layui-btn-primary layui-btn-sm delTopicBtn" title="删除帖子" topicId="{$topic.id}" userId='{$Think.session.userId}'>
+				                    <i class="layui-icon layui-icon-delete"></i>
+				                </button>
+				            {/eq}
+				        </h3>
+				    </div>
+			        <div class="topic-header-bottom flex-space-between">
+				        <div class="topic-header-username">
+				            <i class="layui-icon layui-icon-username"> {$topic.username}</i>
+				        </div>
+				        <div class="topic-header-date">
+				            <i class="layui-icon layui-icon-date"> {$topic.gmt_create}</i>
+				        </div>
+				        <div class="topic-header-note">
+				            <i class="layui-icon layui-icon-note"></i> <a href="#" target="_blank">标签</a>
+				        </div>
+				        <div class="topic-header-view">
+				            <i class="layui-icon layui-icon-find-fill"> 阅读({$topic.view_count})</i>
+				        </div>
+				        <div class="topic-header-reply">
+				            <i class="layui-icon layui-icon-reply-fill"> 回复({$topic.reply_count})</i>
+				        </div>
+				        <div id="collectBtn-{$topic.id}" class="topic-header-collectBtn" topicId="{$topic.id}" userId="{$Think.session.userId}">
+				            {in name='topic.id' value='$Think.session.userCollects|default=0'}
+				            	<i class='layui-icon layui-icon-star-fill'></i>
+				            {else/}
+				            	<i class="layui-icon layui-icon-star"></i>
+				            {/in}	
+				        </div>
+				    </div>
+			        <hr/>
+			    </div>
+			    <div class="topic-body">
+			    	<div class='topic-body-top'>
+			       		{$topic.body}
+			    	</div>
+			       	<div class='topic-body-bottom'>
+			       		<p>上一篇：
+			       			{notempty name='$last_topic.id'}
+			       				<a href="{:url('index/index/details',['topic_id'=> $last_topic.id])}">{$last_topic.title}</a>
+			       			{else/}
+			       				<span>没有了</span>
+			       			{/notempty}
+			       		</p>
+			       		<p>下一篇：
+			       			{notempty name='$next_topic.id'}
+			       				<a href="{:url('index/index/details',['topic_id'=> $next_topic.id])}">{$next_topic.title}</a>
+			       			{else/}
+			       				<span>没有了</span>
+			       			{/notempty}
+			       		</p>
+			       	</div>
+			    </div>
+			</div>
+			<!-- 隐藏域 -->
+			<input id="hiddenValue" type="hidden" ruserId="{$Think.session.userId|default=1}" topicId="{$topic.id}" topicTitle="{$topic.title}"/>
+			<!-- 评论区 -->
+			<div class="replyBox box">
+				<div class="reply-header">
+					<div class='reply-header-top flex-space-between'>
+						<div class="reply-headImg">
+							{empty name='$Think.session.headImg'}
+								<img src="/static/images/user/headimg.jpg" class="layui-nav-img" title="游客"/>
+							{else/}
+								<img src="{$Think.session.headImg}" class="layui-nav-img" title="{$Think.session.userName}"/>
+							{/empty}
+						</div>
+						<div class="reply-textarea" style="width: 750px;">	
+						 	<div class="layui-form-item" style="width: 100%;">						
+								<textarea class="layui-textarea userReply" placeholder="请先登录后评论"/></textarea>
+							</div>
+							<div class="replyBtnBox">
+								<button class="layui-btn replyBtn" nuserId="{$topic.user_id}" nuserName="{$topic.username}" nuserPid="0">发表评论</button>
+							</div>
+						</div>
+			    	</div>
+				</div>
+				<div class="reply-body">
+					<p>最新评论<span style='float:right;'>总共{$topic.reply_count}条评论</span></p>
+					<hr/>
+					{volist name='replyList' id='v'}
+					<div class='reply-body-parent flex-space-between'>
+			    		<div class="reply-headImg">
+							{empty name='$Think.session.headImg'}
+								<img src="/static/images/user/headimg.jpg" class="layui-nav-img" title="游客"/>
+							{else/}
+								<img src="" class="layui-nav-img" title=""/>
+							{/empty}
+						</div>
+						<div class="reply-content">
+							<div class="reply-content-top">
+								<a href="#">{$v.username}</a>
+								<span class="addReplyBtn" onlick="addReplyBtn()" nuserId="{$v.user_id}" nuserName="{$v.username}" nuserPid="{$v.id}">回复</span>
+								<span class="reply-date">
+									{$v.gmt_create}
+								</span>
+								{eq name='v.user_id' value='$Think.session.userId'}
+									<button class="layui-btn layui-btn-primary layui-btn-xs delReplyBtn" title="删除回复" replyId="{$v.id}" userId='{$Think.session.userId}'>
+										<i class="layui-icon layui-icon-delete"></i>
+									</button>
+								{/eq}
+							</div>
+							<div class="reply-text">{$v.content}</div>
+							<div class="reply-textarea"></div>
+							<div class="reply-children-box">
+								{volist name='v.children' id='child'}
+									<div class='reply-children flex-space-between'>
+							    		<div class="reply-headImg">
+											{empty name='$Think.session.headImg'}
+												<img src="/static/images/user/headimg.jpg" class="layui-nav-img" title="游客"/>
+											{else/}
+												<img src="" class="layui-nav-img" title=""/>
+											{/empty}
+										</div>
+										<div class="reply-content">
+											<div class="reply-content-top">
+												<a href="#">{$child.username}</a> @ {$v.user_id}
+												<span class="addReplyBtn" onlick="addReplyBtn()" nuserId="{$child.user_id}" nuserName="{$child.username}" nuserPid="{$child.id}">
+													回复
+												</span>
+												<span class="reply-date">{$child.gmt_create}</span>
+												{eq name='child.user_id' value='$Think.session.userId'}
+													<button class="layui-btn layui-btn-primary layui-btn-xs delReplyBtn" title="删除回复" replyId="{$v.id}" userId='{$Think.session.userId}'>
+														<i class="layui-icon layui-icon-delete"></i>
+													</button>
+												{/eq}
+											</div>
+											<div class="reply-text">{$child.content}</div>												
+											<div class="reply-textarea"></div>
+										</div>
+							    	</div>
+								{/volist}	
+							</div>			
+						</div>
+						
+			    	</div>
+					{/volist}
+					
+				</div>
+			</div>
+		</div>
+		<div class="detailsBox-r">
+			<!-- 作者简介 -->
+			<div class="userInfo box">
+				<div class="userInfo-container"> 
+	                <div class="userInfo-headImg">               
+	                    {empty name='$Think.session.headImg'}
+	                        <img src="/static/images/user/headimg.jpg" class="headImg" />
+	                    {else/}
+	                        <img src="{$Think.session.headImg}" class="headImg"/>
+	                    {/empty}
+	                </div>
+	                <div class="userInfo-text">
+	                    <i class="layui-icon layui-icon-username" title='用户名&性别'> 
+	                        {$userInfo.username}&nbsp; 
+	                        {switch userInfo.gender}
+	                            {case 男}<i class="layui-icon layui-icon-male" style="color: #4EBBF9" title='男'></i>{/case}
+	                            {case 女}<i class="layui-icon layui-icon-female" style="color: #F581B1" title='女'></i>{/case}
+	                            {default/}<i class="layui-icon layui-icon-help" style="color: #ccc" title='保密'></i>
+	                        {/switch}
+	                    </i>
+	                    <br/>
+	                    <i class="layui-icon layui-icon-log" title='注册日期'>
+	                        {$userInfo.gmt_create}
+	                    </i>
+	                </div>
+	            </div>
+			</div>
+		</div>
+	</div>
+{/block}
+{block name='js'}
+{__block__}
+<script type="text/javascript">
+	// $(document).ready(function() {
+        // 点击变化输入框大小
+        // $(".userreply").focus(function() {
+        //     $(this).animate({
+        //         "width" : "750px",
+        //         "height" : "76px"
+        //     })
+        // }).blur(function() {
+        //     $(this).animate({
+        //         "width" : "750px",
+        //         "height" : "38px"
+        //     })
+        // });
+    // });
+    $(".delReplyBtn").bind('click',function(){
+    	var replyId = $(this).attr('replyId');
+    	var userId  = $(this).attr('userId');
+		$.ajax({
+            url    : '/index/reply/deleteReply',
+            type   : 'post',
+            data   :  {'replyId':replyId, 'userId':userId},
+            success: function(res){
+            	layer.msg(res.msg);
+            }
+        });
+    });
+    $(".addReplyBtn").bind('click',function(){
+    	var nuserId   = $(this).attr('nuserId');
+    	var nuserName = $(this).attr('nuserName');
+    	var nuserPid  = $(this).attr('nuserPid');
+    	var textarea  = '<div class="layui-form-item" style="width: 100%;"><textarea class="layui-textarea userReply" placeholder="请先登录后评论"/></textarea></div>';
+    	 	textarea += '<div class="replyBtnBox"><button class="layui-btn replyBtn" nuserId='+nuserId+' nuserName='+nuserName+' nuserPid='+nuserPid+'>发表评论</button></div>';				
+    	var that = $(this).parent().parent().find('.reply-textarea');
+    	if(that.html() == ""){
+    		that.append(textarea);
+    	}else{
+    		that.empty(); 
+    	}
+    });
+	$(".replyBtn").bind('click',function(){
+		var nuserPid  = $(this).attr('nuserPid'); //上一个评论ID
+		var ruserId   = $("#hiddenValue").attr('ruserId'); //评论发布者ID
+		var topicId   = $("#hiddenValue").attr('topicId'); //帖子ID
+		var topicTitle= $("#hiddenValue").attr('topicTitle'); //帖子名称
+		var nuserId   = $(this).attr('nuserId'); //评论通知者ID
+		var nuserName = $(this).attr('nuserName'); //评论通知者名称
+		var content   = $(this).prev().val();
+		var replyData    = new Array(ruserId,topicId,content,pid);
+		var notifiedData = new Array(nuserId,nuserName,topicId,topicTitle,content);
+		if(ruserId){
+			$.ajax({
+                url    : '/index/reply/saveReply',
+                type   : 'post',
+                data   :  {'replyData':replyData,'notifiedData':notifiedData},
+                success: function(res){
+                	alert(res);return;
+                	layer.msg(res.msg);
+                }
+	        });
+		}else{
+			layer.msg('请登录！');
+		}
+			
+	});
+</script>
+{/block}

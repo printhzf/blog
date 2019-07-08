@@ -1,0 +1,64 @@
+{volist name='topicsList' id='list'}
+<div class="topicListBox">
+    <div class="topicListBox-header">
+        <h3>
+            <a href="{:url('index/index/veiwTopicDetail',['topic_id'=> $list.id])}" target="_blank">{$list.title|raw}</a>
+            {eq name='list.user_id' value='$Think.session.userId'}
+                <button class="layui-btn layui-btn-primary layui-btn-sm delTopicBtn" title="删除帖子" topicId="{$list.id}" userId='{$list.user_id}'>
+                    <i class="layui-icon layui-icon-delete"></i>
+                </button>
+            {/eq}
+        </h3>
+        <div class="topic-header-bottom flex-space-between">
+            <div class="topic-header-username">
+                <i class="layui-icon layui-icon-username"> {$list.username}</i>
+            </div>
+            <div class="topic-header-date">
+                <i class="layui-icon layui-icon-date"> {$list.gmt_create}</i>
+            </div>
+            <div class="topic-header-note">
+                <i class="layui-icon layui-icon-note"></i> <a href="#" target="_blank">标签</a>
+            </div>
+            <div class="topic-header-view">
+                <i class="layui-icon layui-icon-find-fill"> 阅读({$list.view_count})</i>
+            </div>
+            <div class="topic-header-reply">
+                <i class="layui-icon layui-icon-reply-fill"> 回复({$list.reply_count})</i>
+            </div>
+            <div id="collectBtn-{$list.id}" class="topic-header-collectBtn" topicId='{$list.id}'  userId="{$Think.session.userId}">
+                {in name='list.id' value='$Think.session.userCollects|default=0'}
+                    <i class='layui-icon layui-icon-star-fill'></i>
+                {else/}
+                    <i class="layui-icon layui-icon-star"></i>
+                {/in}   
+            </div>
+        </div>
+    </div>
+    <div class="topicListBox-body">
+        <!-- 文章封面图片开始 -->
+        <div class="titleImgBox">
+            <a href="{:url('index/index/veiwTopicDetail',['topic_id'=> $list.id])}" target="_blank">
+            {empty name='list.title_img'}
+                <img src="/static/images/index/titleimg.png" class='img' />
+            {else/}
+                <img src="/upload/{$list.title_img}" class='img' />
+            {/empty} 
+            </a>
+        </div>
+        <!-- 文章封面图片结束 -->
+
+        <!-- 文章描述开始 -->
+        <div class="topicBriefBox">
+            <div class="topicBrief">
+                {$list.body|mb_substr=0,150}...
+            </div>
+            <!-- 文章描述结束 -->
+            <a class="layui-btn layui-btn-sm readall" href="{:url('index/index/veiwTopicDetail',['topic_id'=> $list.id])}" target="_blank">
+                阅读全文
+            </a>
+        </div>
+    </div>
+</div>
+{/volist}
+
+

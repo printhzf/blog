@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+	    <meta name="renderer" content="webkit">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	    <title>{$Think.config.web_title}-角色权限列表</title>
+
+	    {load href="/static/buttons/buttons.css"}
+    	{load href="/static/fontawesome-5.6.3/css/all.css"}
+	    {load href="/static/layui/css/layui.css"}
+	    {load href="/static/common/js/jquery-3.3.1.min.js"}
+	    {load href="/static/layui/layui.js"}
+	    
+	    <style type="text/css">
+	    	.m10{
+	    		margin: 10px;
+	    	}
+	    	.mr10{
+	    		width: 26px;
+	    		height: 26px;
+	    		margin-right: 10px;
+	    	}
+	    	.ok{
+	    		font-size: 26px; 
+	    		color: #1E9FFF;
+	    	}
+	    	.close{
+	    		font-size: 26px; 
+	    		color: #FF5722;
+	    	}
+	    </style>
+	</head>
+	<body>
+		<div class="m10">
+			<div class="searchBox">
+				<form id="ruleForm" class="layui-form layui-form-pane" lay-filter="ruleForm" onclick="return false">
+					<div class="layui-form-item">
+						<div class="layui-input-inline" style="width: 260px;">
+							<label class="layui-form-label">关键字</label>
+							<div class="layui-input-block">
+								<input id="keyword" type="text" autocomplete="off" class="layui-input">
+							</div>
+						</div>
+						<div class="layui-inline"> 
+							<button id="searchBtn" class="layui-btn layui-btn-normal">
+								<i class="layui-icon layui-icon-search" style="font-size: 14px"></i>搜索
+							</button>
+							<button id="resetBtn" class="layui-btn layui-btn-primary">
+								<i class="layui-icon layui-icon-refresh" style="font-size: 14px"></i>
+							</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			<!-- 状态样式转换 -->
+			<script id="status" type="text/html" >
+				{{#  if(d.status == '1'){ }}
+					<i class="layui-icon layui-icon-ok ok"></i>
+				{{#  } else { }}
+					<i class="layui-icon layui-icon-close close"></i>
+				{{#  } }}
+			</script>
+			<!-- 类型样式转换 -->
+			<script id="type" type="text/html" >
+				{{#  if(d.type == '1'){ }}
+					<p>实时认证</p>
+				{{#  } else { }}
+					<p>登录认证</p>
+				{{#  } }}
+			</script>
+			<!-- 工具栏 -->
+			<script id="toolbar_ruleList" type="text/html" >
+				<div class="layui-btn-container">
+					<button class="button button-plain button-border button-square button-royal button-small mr10" lay-event="create" title="添加权限">
+						<i class="fa fa-plus"></i>
+					</button>
+					<button class="button button-plain button-border button-square button-highlight button-small mr10" lay-event="edit" title="编辑权限">
+						<i class="fa fa-edit"></i>
+					</button>
+					<button class="button button-plain button-border button-square button-caution  button-small mr10" lay-event="delete" title="删除权限">
+						<i class="fa fa-trash"></i>
+					</button>
+					<button class="button button-plain button-border button-square button-inverse button-small mr10" lay-event="fold" title="折叠全部">
+						<i class="fa fa-compress"></i>
+					</button>
+				</div>
+			</script>
+			<!-- 权限表格 -->
+			<table id="ruleList" lay-filter="ruleList"></table>
+			<!-- 行内按钮 -->
+			<script id="tool_ruleList" type="text/html">
+				<button class="button button-plain button-border button-square button-highlight button-small mr10" lay-event="editOne" title="编辑权限">
+					<i class="fa fa-edit"></i>
+				</button>
+				<button class="button button-plain button-border button-square button-caution button-small mr10" lay-event="deleteOne" title="删除权限">
+					<i class="fa fa-trash"></i>
+				</button>
+			</script>
+ 		</div>
+		<script>
+		var option = {
+	        treeColIndex: 2           // 树形图标显示在第几列
+	        ,treeSpid: 0              // 最上级的父级id
+	        ,treeIdName: 'id'         // id字段的名称	
+	        ,treePidName: 'pid'       // pid字段的名称
+	        ,treeDefaultClose: false  // 是否默认折叠
+	        ,treeLinkage: true        // 父级展开时是否自动展开所有子级
+	        ,elem: '#ruleList'
+			,toolbar: '#toolbar_ruleList'
+			,height: 600
+			,even: true
+			,cellMinWidth: 80 //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+			,url: 'readrule' //数据接口
+			,page: true //开启分页
+			,cols: [[ //表头
+				{type: 'checkbox'}
+				,{type: 'numbers', title: '序号', width: 60}
+				,{field: 'title', title: '权限名', width:200}
+				,{field: 'name', title: '权限规则'}
+				,{field: 'type', title: '类型', width:120, sort: true, templet: '#type'}
+				,{field: 'status', title: '状态', width:80, sort: true, templet: '#status'}
+				,{field: 'condition', title: '条件', width:200}
+				,{fixed: 'right', title:'操作', toolbar: '#tool_ruleList', width:120}
+			]]
+	    };
+
+		layui.config({
+		    base: '/static/'
+		}).extend({
+		    treetable: 'treetable-lay/treetable'
+		}).use(['table', 'treetable', 'form'], function () {
+		    var table = layui.table
+		    ,form = layui.form
+		    ,treetable = layui.treetable;
+
+		    // 渲染表格
+			treetable.render(option);
+
+			// 监听提交按钮
+			// form.on('submit(search)', function(data){
+			// 	var cond = {
+	  //       		name : $('#name').val()
+			// 		,title  : $('#title').val()
+			// 		,type  : $('#sel_type').val()
+			// 		,status  : $('#sel_status').val()
+			// 		,condition : $('#condition').val()
+	  //       	};
+			// 	treetable.reload('ruleList',{
+			// 		where : {cond}
+			// 		,page : {curr:1}
+			// 	});
+			// 	return false;
+			// });
+			// 工具栏事件
+			table.on('toolbar(ruleList)', function(obj){
+				var checkStatus = table.checkStatus(obj.config.id);
+				var data = checkStatus.data;	
+				var length = data.length;
+				switch(obj.event){
+					case 'create':
+						editRule(0, true);			
+					break;
+					case 'edit':	
+						if (length == 0 || length > 1) {
+							layer.msg('请勾选一项', {icon:5});
+						} else {
+							editRule(data[0]['id']);
+						}
+					break;
+					case 'delete':
+						var idArr = [];
+						$.each(data, function(index, item){
+							idArr.push(item.id);
+						})
+						deleteRule(idArr);
+					break;
+					case 'fold':
+						var i = $(this).find("i");
+						i.toggleClass('fa-expand');
+						i.toggleClass('fa-compress');
+						$(this).css('color','black');
+						$(this).css('background-color','#F2F2F2');
+						if (i.hasClass('fa-compress')) {
+							treetable.expandAll('#ruleList');
+						} else {
+							treetable.foldAll('#ruleList');
+						}
+					break;
+				};
+			});
+
+			// 监听行工具事件
+			table.on('tool(ruleList)', function(obj){
+				var data = obj.data;
+				var id = data.id;
+				switch(obj.event)
+				{
+					case 'editOne' :	
+						editRule(id);
+					break;
+					case 'deleteOne' :
+						var idArr = [id];
+						deleteRule(idArr);
+					break;
+				}
+			});
+
+			// 点击搜索
+			$('#searchBtn').on('click', function(){
+				var keyword = $('#keyword').val();
+				var searchCount = 0;
+				$("#ruleList").next('.treeTable').find('.layui-table-body tbody tr td').each(function(){
+					$(this).css('background-color','transparent');
+					var text = $(this).text();
+					if (keyword != '' && text.indexOf(keyword) >= 0) {
+						$(this).css('background-color', 'rgba(250,230,160,0.5');
+						if (searchCount == 0) {
+							treetable.expandAll('#ruleList');
+							$('html,body').stop(true);
+							$('html,body').animate({scrollTop:$(this).offset().top -150}, 500);
+						}
+						searchCount++;
+					}
+				});
+				if (keyword == '') {
+					layer.msg('请输入搜索内容', {icon:5});
+				} else if (searchCount==0) {
+					layer.msg('没有匹配结果', {icon:5});
+				}
+			});
+
+			// 点击重置
+			$('#resetBtn').on('click', function(){
+				$('#ruleForm')[0].reset();
+			});
+
+			// 编辑权限
+			function editRule(id, flag) {
+				var title = flag === true ? '新增权限' : '编辑权限';
+				var url = 'editrule/'+id;
+				var title = title;
+				var index = parent.layer.open({
+					type : 2
+					,title : title
+					,shadeClose: true
+					,area : ['600px','620px']
+					,fixed : false //不固定
+					,content : url
+					,end : function() {}
+				});
+			}
+
+			// 删除权限
+			function deleteRule(idArr) {
+				if (idArr.length > 0) {
+					var str = '是否确定删除？';
+					layer.confirm(str, {btn: ['确定', '取消'], title: "提示"}, function () {
+						$.ajax({
+							type : 'post'
+							,data : {'idArr' : idArr}
+							,url  : 'deleterule' 
+							,success : function(res) {
+								layer.msg(res.msg, {time: 1200}, function() {
+									if (res.code == 200) {
+										window.location.reload();
+									}
+								});
+							}
+						});
+					});
+				} else {
+					layer.msg('请至少勾选一项', {icon:5});
+				}
+			}
+		});
+</script>
+	</body>
+</html>

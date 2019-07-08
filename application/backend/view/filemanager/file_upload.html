@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+        <title>{$Think.config.web_title}-文件上传</title>
+
+        {load href="/static/layui/css/layui.css"}
+        {load href="/static/js/jquery-3.3.1.min.js"}
+        {load href="/static/layui/layui.js"}
+        <style type="text/css">
+            .main{
+                padding: 20px;
+                margin: 0 auto;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="main">
+            <div class="layui-upload">
+                <button type="button" class="layui-btn layui-btn-normal" id="chooseBtn">选择文件</button> 
+                <div class="layui-upload-list">
+                    <table class="layui-table">
+                        <thead>
+                            <tr><th>文件名</th>
+                            <th>大小</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fileList"></tbody>
+                    </table>
+                </div>
+                <blockquote class="layui-elem-quote layui-quote-nm" style="margin-top: 10px;">
+                    预览图：
+                    <div class="layui-upload-list" id="preview"></div>
+                </blockquote>
+                <button id="sureBtn" type="button" class="layui-btn">开始上传</button>
+            </div> 
+        </div>
+        <script type="text/javascript">
+            //一般直接写在一个js文件中
+            layui.use('upload', function(){
+                var $ = layui.jquery
+                ,upload = layui.upload;
+
+                //多文件列表示例
+                var fileList = $('#fileList')
+                ,uploadListIns = upload.render({
+                    elem: '#chooseBtn'
+                    ,url: '/index/filemanager/uploadFile'
+                    ,multiple: true
+                    ,auto: false
+                    ,bindAction: '#sureBtn'
+                    ,choose: function(obj){   
+                        var files = this.files = obj.pushFile(); //将每次选择的文件追加到文件队列
+                        //读取本地文件
+                        obj.preview(function(index, file, result){
+                            var tr = $(['<tr id="upload-'+ index +'">'
+                            ,'<td>'+ file.name +'</td>'
+                            ,'<td>'+ (file.size/1014).toFixed(1) +'kb</td>'
+                            ,'<td>等待上传</td>'
+                            ,'<td>'
+                            ,'<button class="layui-btn layui-btn-xs preFile-reload layui-hide">重传</button>'
+                            ,'<button class="layui-btn layui-btn-xs layui-btn-danger preFile-delete">删除</button>'
+                            ,'</td>'
+                            ,'</tr>'].join(''));
+
+                            //单个重传
+                            tr.find('.preFile-reload').on('click', function(){
+                                obj.upload(index, file);
+                            });
+
+                            //删除
+                            tr.find('.preFile-delete').on('click', function(){
+                                delete files[index]; //删除对应的文件
+                                tr.remove();
+                                uploadListIns.config.elem.next()[0].value = ''; //清空 input file 值，以免删除后出现同名文件不可选
+                                $("#previewImg-"+index).remove();
+                            });
+
+                            fileList.append(tr);
+                            if((file.type).indexOf("image") >= 0 ){
+                                $('#preview').append('<img id="previewImg-'+index+'" src="'+ result +'" alt="'+ file.name +'" class="layui-upload-img" style="max-width:100%">')
+                            } else {
+                                $('#preview').append(file.name)
+                            }
+                        });
+                    }
+                    ,done: function(res, index, upload){
+                        if(res.code == 0){ //上传成功
+                            var tr = fileList.find('tr#upload-'+ index)
+                            ,tds = tr.children();
+                            tds.eq(2).html('<span style="color: #5FB878;">上传成功</span>');
+                            tds.eq(3).html(''); //清空操作
+                            $("#previewImg-"+index).remove();
+                            return delete this.files[index]; //删除文件队列已经上传成功的文件
+                        }
+                        this.error(index, upload);
+                    }
+                    ,error: function(index, upload){
+                        var tr = fileList.find('tr#upload-'+ index)
+                        ,tds = tr.children();
+                        tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
+                        tds.eq(3).find('.preFile-reload ').removeClass('layui-hide'); //显示重传
+                    }
+                });
+            });
+        </script> 
+    </body>
+</html>
